@@ -10,4 +10,12 @@ It uses the JSAT library developed by Edward Raff under GPL 3. The link to the J
 
 ## Changes
 
-I have altered the impurity score of classifiers so that a fairness constraint is added. An example of a decision tree using the fairness constraint is found under src/main/java/com/examples/jsatexamples/ClassificationExample.java
+I have altered the impurity score of classifiers so that a fairness constraint is added. I have also altered the arff reader to ignore missing values in datasets.
+
+## Running
+
+An example of a decision tree using the fairness constraint is found under src/main/java/com/examples/jsatexamples/ClassificationExample.java
+
+We use the adult dataset for the example as used in the paper by Raff and found [here](https://archive.ics.uci.edu/ml/datasets/adult)
+
+
