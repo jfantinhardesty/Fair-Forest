@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2017 Edward Raff
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 package com.examples.jsatexamples;
 
 import java.io.File;
@@ -30,16 +14,17 @@ import static java.lang.Math.*;
 import jsat.classifiers.trees.TreePruner.PruningMethod;
 
 /**
- * A simple example where we load up a data set for classification purposes. 
- * 
- * @author Edward Raff
+ * A example of the fairness impurity score using decision tree on the adult dataset.
  */
 public class ClassificationExample
 {
 
-    /**
-     * @param args the command line arguments
-     */
+public class ClassificationExample
+{
+	
+	// In this example we have hard coded the fair attribute to be '6' in the decision stump and other files
+	// We also hard coded the numbe of possible values for this attribute to be 2 (male/female) in the correspoinding files for fairness
+
     public static void main(String[] args)
     {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
@@ -63,11 +48,9 @@ public class ClassificationExample
         
         for(int i = 0; i < ctestDataSet.size(); i++)
         {
-            DataPoint dataPoint = ctestDataSet.getDataPoint(i);//It is important not to mix these up, the class has been removed from data points in 'cDataSet' 
-            int truth = ctestDataSet.getDataPointCategory(i);//We can grab the true category from the data set
+            DataPoint dataPoint = ctestDataSet.getDataPoint(i);
+            int truth = ctestDataSet.getDataPointCategory(i);
             
-            //Categorical Results contains the probability estimates for each possible target class value. 
-            //Classifiers that do not support probability estimates will mark its prediction with total confidence. 
             CategoricalResults predictionResults = classifier.classify(dataPoint);
             int predicted = predictionResults.mostLikely();
             
