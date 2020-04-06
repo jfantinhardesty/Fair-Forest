@@ -69,17 +69,17 @@ public class RandomForest implements Classifier, Regressor, Parameterized
     private RandomDecisionTree baseLearner;
     private List<DecisionTree> forest;
     
-    public RandomForest()
+    public RandomForest(int fairAttribute)
     {
-        this(100);
+        this(100, fairAttribute);
     }
 
-    public RandomForest(int maxForestSize)
+    public RandomForest(int maxForestSize, int fairAttribute)
     {
         setExtraSamples(0);
         setMaxForestSize(maxForestSize);
         autoFeatureSample();
-        baseLearner = new RandomDecisionTree(1, 6, 3, TreePruner.PruningMethod.NONE, 0);
+        baseLearner = new RandomDecisionTree(1, Integer.MAX_VALUE, 3, fairAttribute, TreePruner.PruningMethod.NONE, 0);
         baseLearner.setGainMethod(ImpurityMeasure.GINI);
     }
     

@@ -39,6 +39,7 @@ public class ImpurityScore implements Cloneable
     }
     
     private double sumOfWeights;
+    private int numFairSplits;
     private final double[] fairCounts;
     private final double[] counts;
     private final ImpurityMeasure impurityMeasure;
@@ -53,6 +54,7 @@ public class ImpurityScore implements Cloneable
     public ImpurityScore(int classCount, int fairAttributeCount, ImpurityMeasure impurityMeasure)
     {
         sumOfWeights = 0.0;
+        numFairSplits = fairAttributeCount;
         counts = new double[classCount];
         fairCounts = new double[fairAttributeCount];
         this.impurityMeasure = impurityMeasure;
@@ -65,6 +67,7 @@ public class ImpurityScore implements Cloneable
     private ImpurityScore(ImpurityScore toClone)
     {
         this.sumOfWeights = toClone.sumOfWeights;
+        this.numFairSplits = toClone.numFairSplits;
         this.counts = Arrays.copyOf(toClone.counts, toClone.counts.length);
         this.fairCounts = Arrays.copyOf(toClone.fairCounts, toClone.fairCounts.length);
         this.impurityMeasure = toClone.impurityMeasure;
@@ -136,8 +139,7 @@ public class ImpurityScore implements Cloneable
             default:
                 break;
         }
-        
-        return score;
+        return abs(score);
     }
     
     /**
@@ -157,7 +159,7 @@ public class ImpurityScore implements Cloneable
             score -= p * p;
         }
         
-        return score / (1.0 - (1.0 / 2.0));
+        return abs(score / (1.0 - (1.0 / numFairSplits)));
     }
 
     /**
@@ -335,7 +337,7 @@ public class ImpurityScore implements Cloneable
         }
 
         double fairGain = wholeData.getFairScore()-fairSplitScore;
-        return (double)gain - fairGain;
+        return gain - fairGain;
     }
     
     @Override

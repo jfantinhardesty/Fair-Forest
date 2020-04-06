@@ -22,17 +22,19 @@ public class RandomDecisionTree extends DecisionTree
     private static final long serialVersionUID = -809244056947507494L;
     private int numFeatures;
 
-    public RandomDecisionTree()
+    public RandomDecisionTree(int fairAttribute)
     {
-        this(1);
+        this(1, fairAttribute);
     }
 
     /**
      * Creates a new Random Decision Tree 
      * @param numFeatures the number of random features to use
+     * @param fairAttribute the attribute to keep fair
      */
-    public RandomDecisionTree(int numFeatures)
+    public RandomDecisionTree(int numFeatures, int fairAttribute)
     {
+        super(numFeatures, fairAttribute);
         setRandomFeatureCount(numFeatures);
     }
 
@@ -41,12 +43,13 @@ public class RandomDecisionTree extends DecisionTree
      * @param numFeatures the number of random features to use
      * @param maxDepth the maximum depth of the tree to create
      * @param minSamples the minimum number of samples needed to continue branching
+     * @param fairAttribute the attribute to keep fair
      * @param pruningMethod the method of pruning to use after construction 
      * @param testProportion the proportion of the data set to put aside to use for pruning
      */
-    public RandomDecisionTree(int numFeatures, int maxDepth, int minSamples, TreePruner.PruningMethod pruningMethod, double testProportion)
+    public RandomDecisionTree(int numFeatures, int maxDepth, int minSamples, int fairAttribute, TreePruner.PruningMethod pruningMethod, double testProportion)
     {
-        super(maxDepth, minSamples, pruningMethod, testProportion);
+        super(maxDepth, minSamples, fairAttribute, pruningMethod, testProportion);
         setRandomFeatureCount(numFeatures);
     }
 

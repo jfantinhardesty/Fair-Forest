@@ -14,17 +14,10 @@ import static java.lang.Math.*;
 import jsat.classifiers.trees.TreePruner.PruningMethod;
 
 /**
- * A example of the fairness impurity score using decision tree on the adult dataset.
+ * A simple classification example
  */
 public class ClassificationExample
 {
-
-public class ClassificationExample
-{
-	
-	// In this example we have hard coded the fair attribute to be '6' in the decision stump and other files
-	// We also hard coded the numbe of possible values for this attribute to be 2 (male/female) in the correspoinding files for fairness
-
     public static void main(String[] args)
     {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
@@ -34,9 +27,12 @@ public class ClassificationExample
         //We specify '8' as the class we would like to make the target class. 
         ClassificationDataSet cDataSet = new ClassificationDataSet(dataSet, 8);
         
+        // Fair attribute is sex
+        int fairAttribute = 6;
+        
         int errors = 0;
-        Classifier classifier = new DecisionTree(Integer.MAX_VALUE, 1, PruningMethod.NONE, 0.00001);
-        //Classifier classifier = new RandomForest(100);
+        //Classifier classifier = new DecisionTree(Integer.MAX_VALUE, 1, fairAttribute, PruningMethod.NONE, 0);
+        Classifier classifier = new RandomForest(100, fairAttribute);
         classifier.train(cDataSet, true);
         
         File file2 = new File(classloader.getResource("adultTest.arff").getFile());

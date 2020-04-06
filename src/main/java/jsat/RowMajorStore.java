@@ -30,6 +30,8 @@ import jsat.linear.SubVector;
 import jsat.linear.Vec;
 import jsat.math.OnLineStatistics;
 
+import java.util.Collections;
+
 /**
  *
  * @author Edward Raff
@@ -82,6 +84,12 @@ public class RowMajorStore implements DataStore
         this.num_numeric = toCopy.numNumeric();
     }
     
+    @Override
+    public void shuffle()
+    {
+        Collections.shuffle(datapoints);
+    }
+
     @Override
     public void addDataPoint(DataPoint dp)
     {

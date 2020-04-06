@@ -139,6 +139,11 @@ public abstract class DataSet<Type extends DataSet>
         
         return true;
     }
+    
+    public void shuffle()
+    {
+        datapoints.shuffle();
+    }
 
     /**
      * Returns the name used for the <tt>i</tt>'th numeric attribute. 

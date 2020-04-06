@@ -35,6 +35,7 @@ public class DecisionTree implements Classifier, Regressor, Parameterized, TreeL
 {
 
     private static final long serialVersionUID = 9220980056440500214L;
+    private int fairAttribute;
     private int maxDepth;
     private int minSamples;
     private Node root;
@@ -98,19 +99,21 @@ public class DecisionTree implements Classifier, Regressor, Parameterized, TreeL
     /**
      * Creates a Decision Tree that uses {@link PruningMethod#REDUCED_ERROR}
      * pruning on a held out 10% of the data.
+     * @param fairAttribute the attribute to keep fair
      */
-    public DecisionTree()
+    public DecisionTree(int fairAttribute)
     {
-        this(Integer.MAX_VALUE, 10, PruningMethod.REDUCED_ERROR, 0.1);
+        this(Integer.MAX_VALUE, 10, fairAttribute, PruningMethod.REDUCED_ERROR, 0.1);
     }
 
     /**
      * Creates a Decision Tree that does not do any pruning, and is built out only to the specified depth
      * @param maxDepth 
+     * @param fairAttribute the attribute to keep fair
      */
-    public DecisionTree(int maxDepth)
+    public DecisionTree(int maxDepth, int fairAttribute)
     {
-        this(maxDepth, 10, PruningMethod.NONE, 0.00001);
+        this(maxDepth, 10, fairAttribute, PruningMethod.NONE, 0.00001);
     }
 
     /**
@@ -118,11 +121,13 @@ public class DecisionTree implements Classifier, Regressor, Parameterized, TreeL
      * 
      * @param maxDepth the maximum depth of the tree to create
      * @param minSamples the minimum number of samples needed to continue branching
+     * @param fairAttribute the attribute to keep fair
      * @param pruningMethod the method of pruning to use after construction 
      * @param testProportion the proportion of the data set to put aside to use for pruning
      */
-    public DecisionTree(int maxDepth, int minSamples, PruningMethod pruningMethod, double testProportion)
+    public DecisionTree(int maxDepth, int minSamples, int fairAttribute, PruningMethod pruningMethod, double testProportion)
     {
+        setFairAttribute(fairAttribute);
         setGainMethod(ImpurityMeasure.GINI);
         setMaxDepth(maxDepth);
         setMinSamples(minSamples);
@@ -138,6 +143,7 @@ public class DecisionTree implements Classifier, Regressor, Parameterized, TreeL
     {
         this.maxDepth = toCopy.maxDepth;
         this.minSamples = toCopy.minSamples;
+        this.fairAttribute = toCopy.fairAttribute;
         if(toCopy.root != null)
             this.root = toCopy.root.clone();
         if(toCopy.predicting != null)
@@ -146,32 +152,11 @@ public class DecisionTree implements Classifier, Regressor, Parameterized, TreeL
         this.testProportion = toCopy.testProportion;
         this.baseStump = toCopy.baseStump.clone();
     }
-
-    /**
-     * Returns a Decision Tree with settings initialized so that its behavior is
-     * approximately that of the C4.5 decision tree algorithm when used on 
-     * classification data. The exact behavior not identical, and certain 
-     * base cases may not behave in the exact same manner. However, it uses all
-     * of the same general algorithms. <br><br>
-     * The returned tree does not perform or support
-     * <ul>
-     * <li>discrete attribute grouping</li>
-     * <li>windowing</li>
-     * <li>subsidiary cutpoints (soft boundaries)</li>
-     * </ul>
-     * 
-     * @return a decision tree that will behave in a manner similar to C4.5
-     */
-    public static DecisionTree getC45Tree()
+    
+    public final void setFairAttribute(int fairAttribute)
     {
-        DecisionTree tree = new DecisionTree();
-        tree.setMinResultSplitSize(2);
-        tree.setMinSamples(3);
-        tree.setMinResultSplitSize(2);
-        tree.setTestProportion(1.0);
-        tree.setPruningMethod(PruningMethod.ERROR_BASED);
-        tree.baseStump.setGainMethod(ImpurityMeasure.INFORMATION_GAIN_RATIO);
-        return tree;
+        this.fairAttribute = fairAttribute;
+        baseStump.setFairAttribute(fairAttribute);
     }
     
     public final void setGainMethod(ImpurityMeasure gainMethod)
@@ -486,7 +471,7 @@ public class DecisionTree implements Classifier, Regressor, Parameterized, TreeL
     @Override
     public DecisionTree clone()
     {
-        DecisionTree copy = new DecisionTree(maxDepth, minSamples, pruningMethod, testProportion);
+        DecisionTree copy = new DecisionTree(maxDepth, minSamples, fairAttribute, pruningMethod, testProportion);
         if(this.predicting != null)
             copy.predicting = this.predicting.clone();
         if(this.root != null)

@@ -205,4 +205,6 @@ public interface DataStore
      * no data points.
      */
     public DataStore emptyClone();
+    
+    public void shuffle();
 }

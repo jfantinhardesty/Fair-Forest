@@ -34,11 +34,13 @@ import jsat.utils.concurrent.ParallelUtils;
  * @author Edward Raff
  */
 public class DecisionStump implements Classifier, Regressor, Parameterized {
-    
-    int fair_attribute = 6;
-    int num_fair_attributes = 2;
 
     private static final long serialVersionUID = -2849268862089019514L;
+    
+    /**
+     * Indicates the fair attribute
+     */
+    private static int fairAttribute;
 
     /**
      * Indicates which attribute to split on
@@ -94,7 +96,7 @@ public class DecisionStump implements Classifier, Regressor, Parameterized {
      * Creates a new decision stump
      */
     public DecisionStump() {
-        gainMethod = ImpurityMeasure.INFORMATION_GAIN_RATIO;
+        gainMethod = ImpurityMeasure.GINI;
         removeContinuousAttributes = false;
     }
 
@@ -110,6 +112,10 @@ public class DecisionStump implements Classifier, Regressor, Parameterized {
      */
     public void setRemoveContinuousAttributes(boolean removeContinuousAttributes) {
         this.removeContinuousAttributes = removeContinuousAttributes;
+    }
+    
+    public void setFairAttribute(int fairAttribute) {
+        this.fairAttribute = fairAttribute;
     }
 
     public void setGainMethod(ImpurityMeasure gainMethod) {
@@ -454,9 +460,8 @@ public class DecisionStump implements Classifier, Regressor, Parameterized {
                         aSplit = listOfLists(data, catAttributes[attribute].getNumOfCategories());
                         split_scores = new ImpurityScore[aSplit.size()];
                         for (int i = 0; i < split_scores.length; i++) {
-                            split_scores[i] = new ImpurityScore(predicting.getNumOfCategories(), num_fair_attributes, gainMethod);
+                            split_scores[i] = new ImpurityScore(predicting.getNumOfCategories(), catAttributes[fairAttribute].getNumOfCategories(), gainMethod);
                         }
-                        
                         
                         IntList wasMissing = new IntList();
                         double missingSum = 0.0;
@@ -466,7 +471,7 @@ public class DecisionStump implements Classifier, Regressor, Parameterized {
                             double weight = data.getWeight(i);
                             if (val >= 0) {
                                 aSplit.get(val).addDataPoint(data.getDataPoint(i), data.getDataPointCategory(i), weight);
-                                split_scores[val].addPoint(weight, data.getDataPointCategory(i), data.getDataPoint(i).getCategoricalValue(fair_attribute));
+                                split_scores[val].addPoint(weight, data.getDataPointCategory(i), data.getDataPoint(i).getCategoricalValue(fairAttribute));
                             } else {
                                 wasMissing.add(i);
                                 missingSum += weight;
@@ -638,7 +643,7 @@ public class DecisionStump implements Classifier, Regressor, Parameterized {
         int splitIndex = -1;
 
         ImpurityScore rightSide = origScore.clone();
-        ImpurityScore leftSide = new ImpurityScore(N, num_fair_attributes, gainMethod);
+        ImpurityScore leftSide = new ImpurityScore(N, catAttributes[fairAttribute].getNumOfCategories(), gainMethod);
         //remove any Missing Value nodes from considering from the start 
         double nanWeightRemoved = 0;
         for (int i : wasNaN) {
@@ -646,7 +651,7 @@ public class DecisionStump implements Classifier, Regressor, Parameterized {
             int truth = dataPoints.getDataPointCategory(i);
 
             nanWeightRemoved += weight;
-            rightSide.removePoint(weight, truth, dataPoints.getDataPoint(i).getCategoricalValue(fair_attribute));
+            rightSide.removePoint(weight, truth, dataPoints.getDataPoint(i).getCategoricalValue(fairAttribute));
         }
         double wholeRescale = rightSide.getSumOfWeights() / (rightSide.getSumOfWeights() + nanWeightRemoved);
 
@@ -657,17 +662,19 @@ public class DecisionStump implements Classifier, Regressor, Parameterized {
             int indx = workSet.getI(i);
             double weight = dataPoints.getWeight(indx);
             int truth = dataPoints.getDataPointCategory(indx);
+            int fair = dataPoints.getDataPoint(indx).getCategoricalValue(fairAttribute);
 
-            leftSide.addPoint(weight, truth, dataPoints.getDataPoint(i).getCategoricalValue(fair_attribute));
-            rightSide.removePoint(weight, truth, dataPoints.getDataPoint(i).getCategoricalValue(fair_attribute));
+            leftSide.addPoint(weight, truth, fair);
+            rightSide.removePoint(weight, truth, fair);
         }
 
         for (int i = minResultSplitSize; i < dataPoints.size() - minResultSplitSize - 1 - wasNaN.size(); i++) {
             int indx = workSet.getI(i);
             double w = dataPoints.getWeight(indx);
             int y = dataPoints.getDataPointCategory(indx);
-            rightSide.removePoint(w, y, dataPoints.getDataPoint(i).getCategoricalValue(fair_attribute));
-            leftSide.addPoint(w, y, dataPoints.getDataPoint(i).getCategoricalValue(fair_attribute));
+            int fair = dataPoints.getDataPoint(indx).getCategoricalValue(fairAttribute);
+            rightSide.removePoint(w, y, fair);
+            leftSide.addPoint(w, y, fair);
             double leftVal = vals[i];
             double rightVal = vals[i + 1];
             if ((rightVal - leftVal) < 1e-14)//Values are too close!
@@ -981,10 +988,10 @@ public class DecisionStump implements Classifier, Regressor, Parameterized {
     }
 
     private ImpurityScore getClassGainScore(ClassificationDataSet dataPoints, IntList subset) {
-        ImpurityScore cgs = new ImpurityScore(predicting.getNumOfCategories(), num_fair_attributes, gainMethod);
+        ImpurityScore cgs = new ImpurityScore(predicting.getNumOfCategories(), catAttributes[fairAttribute].getNumOfCategories(), gainMethod);
 
         subset.forEach((i) -> {
-            cgs.addPoint(dataPoints.getWeight(i), dataPoints.getDataPointCategory(i), dataPoints.getDataPoint(i).getCategoricalValue(fair_attribute));
+            cgs.addPoint(dataPoints.getWeight(i), dataPoints.getDataPointCategory(i), dataPoints.getDataPoint(i).getCategoricalValue(fairAttribute));
         });
 
         return cgs;
@@ -999,10 +1006,10 @@ public class DecisionStump implements Classifier, Regressor, Parameterized {
     }
 
     private ImpurityScore getClassGainScore(ClassificationDataSet dataPoints) {
-        ImpurityScore cgs = new ImpurityScore(predicting.getNumOfCategories(), num_fair_attributes, gainMethod);
+        ImpurityScore cgs = new ImpurityScore(predicting.getNumOfCategories(), catAttributes[fairAttribute].getNumOfCategories(), gainMethod);
 
         for (int i = 0; i < dataPoints.size(); i++) {
-            cgs.addPoint(dataPoints.getWeight(i), dataPoints.getDataPointCategory(i), dataPoints.getDataPoint(i).getCategoricalValue(fair_attribute));
+            cgs.addPoint(dataPoints.getWeight(i), dataPoints.getDataPointCategory(i), dataPoints.getDataPoint(i).getCategoricalValue(fairAttribute));
         }
 
         return cgs;

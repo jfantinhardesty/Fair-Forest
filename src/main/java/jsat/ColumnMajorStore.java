@@ -19,6 +19,7 @@ package jsat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import jsat.classifiers.CategoricalData;
@@ -112,6 +113,12 @@ public class ColumnMajorStore implements DataStore
             this.cat_info = CategoricalData.copyOf(toCopy.cat_info);
         this.size = toCopy.size;
         this.sparse = toCopy.sparse;
+    }
+    
+    @Override
+    public void shuffle()
+    {
+        // Not implemented
     }
 
     @Override
