@@ -14,8 +14,5 @@ I have altered the impurity score of classifiers so that a fairness constraint i
 
 ## Running
 
-An example of a decision tree using the fairness constraint is found under src/main/java/com/examples/jsatexamples/ClassificationExample.java
-
-We use the adult dataset for the example as used in the paper by Raff and found [here](https://archive.ics.uci.edu/ml/datasets/adult)
-
+Example of a decision tree using the fairness constraint is found under src/main/java/com/examples/jsatexamples folder. This contains the relevant testing files for the Community Crime, Compas, and Credit Card data set. Random shuffles of the data sets are found in the resources folder.
 
