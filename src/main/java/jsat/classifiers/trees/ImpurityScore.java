@@ -139,7 +139,7 @@ public class ImpurityScore implements Cloneable
             default:
                 break;
         }
-        return abs(score);
+        return abs(score / (1.0 - (1.0 / counts.length)));
     }
     
     /**
