@@ -559,6 +559,35 @@ public abstract class DataSet<Type extends DataSet>
         return datasets;
     }
     
+    public List<Type> split(double... splits)
+    {
+        if(splits.length < 1)
+            throw new IllegalArgumentException("Input array of split fractions must be non-empty");
+        IntList order = new IntList(size());
+        ListUtils.addRange(order, 0, size(), 1);
+        
+        int[] stops = new int[splits.length];
+        double sum = 0;
+        for(int i = 0; i < splits.length; i++)
+        {
+            sum += splits[i];
+            if(sum >= 1.001/*some flex room for numeric issues*/)
+                throw new IllegalArgumentException("Input splits sum is greater than 1 by index " + i + " reaching a sum of " + sum);
+            stops[i] = (int) Math.round(sum*order.size());
+        }
+        
+        List<Type> datasets = new ArrayList<>(splits.length);
+        
+        int prev = 0;
+        for(int i = 0; i < stops.length; i++)
+        {
+            datasets.add(getSubset(order.subList(prev, stops[i])));
+            prev = stops[i];
+        }
+        
+        return datasets;
+    }
+    
     /**
      * Splits the dataset randomly into proportionally sized partitions. 
      *

@@ -19,15 +19,15 @@ import jsat.classifiers.trees.TreePruner.PruningMethod;
 /**
  * A simple classification example
  */
-public class CompasTest
+public class CrimeCommunityTest
 {
     public static void main(String[] args)
     {
-        //We specify '4' as the class we would like to make the target class. 
-        int label = 4;
+        //We specify '1' as the class we would like to make the target class. 
+        int label = 1;
         
-        // Fair attribute is race
-        int fairAttribute = 3;
+        // Fair attribute is percentage of African American residents binarized.
+        int fairAttribute = 0;
         
         int numTrials = 50;
         
@@ -43,7 +43,7 @@ public class CompasTest
         for(int i = 0; i < numTrials; i++)
         {
             ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-            File file = new File(classloader.getResource("compas" + (i+1) + ".arff").getFile());
+            File file = new File(classloader.getResource("crimecommunity" + (i+1) + ".arff").getFile());
             DataSet dataSet = ARFFLoader.loadArffFile(file);
             ClassificationDataSet cDataSet = new ClassificationDataSet(dataSet, label);
         
@@ -53,10 +53,9 @@ public class CompasTest
             ClassificationDataSet cDataTest = ret.get(1);
                       
             int errors = 0;
-            //Classifier classifier = new DecisionTree(6, 1, fairAttribute, PruningMethod.NONE, 0);
-            Classifier classifier = new RandomForest(100, 6, fairAttribute);
+            //Classifier classifier = new DecisionTree(4, 1, fairAttribute, PruningMethod.NONE, 0);
+            Classifier classifier = new RandomForest(100, 4, fairAttribute);
             classifier.train(cDataTrain, true);
-            
 
             int labelPredict[] = new int[cDataTest.size()];
             int fair_attribute[] = new int[cDataTest.size()];
@@ -74,7 +73,9 @@ public class CompasTest
 
 
                 if(predicted != truth)
+                {
                     errors++;
+                }
                 //System.out.println( j + "| True Class: " + truth + ", Predicted: " + predicted + ", Confidence: " + predictionResults.getProb(predicted) );
             }
             
@@ -82,8 +83,8 @@ public class CompasTest
             discrim[i] = discrimination(labelPredict, fair_attribute);
             normDisp[i] = normedDisparate(labelPredict, fair_attribute);
             System.out.println(errors + " errors were made, " + errorRate[i] + " error rate" );
-            System.out.println("Discrimination for gender " + discrim[i]);
-            System.out.println("Normed Disparate for gender " + normDisp[i]);
+            System.out.println("Discrimination for race " + discrim[i]);
+            System.out.println("Normed Disparate for race " + normDisp[i]);
         }
         
         System.out.println((double)sum(errorRate)/numTrials + " error rate over " + numTrials + " trials");
@@ -164,10 +165,6 @@ public class CompasTest
             {
                 sum_pred_c2 += labelPredict[i];
             }
-        }
-        if ((double)sum_pred_c1/num_c1 == (double)sum_pred_c2/num_c2)
-        {
-            return 1;
         }
         
         if ((double)sum_pred_c1/num_c1 < (double)sum_pred_c2/num_c2)
